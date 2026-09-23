@@ -1,0 +1,244 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// Role: "RESIDENT", "ADMIN", "SECURITY"
+// ResidentType: "OWNER", "TENANT"
+// UnitStatus: "OCCUPIED", "VACANT", "MAINTENANCE"
+// BillStatus: "PAID", "PENDING", "OVERDUE", "PARTIAL"
+// Priority: "LOW", "MEDIUM", "HIGH", "URGENT"
+// ComplaintStatus: "SUBMITTED", "ASSIGNED", "IN_PROGRESS", "RESOLVED", "CLOSED"
+// VisitorType: "GUEST", "DELIVERY", "CAB", "DOMESTIC_HELP", "SERVICE_PROVIDER", "OTHER"
+// VisitorStatus: "EXPECTED", "ARRIVED", "CHECKED_IN", "CHECKED_OUT", "REJECTED", "EXPIRED"
+// AmenityStatus: "AVAILABLE", "BOOKED", "CLOSED", "MAINTENANCE"
+// NoticeCategory: "GENERAL", "MAINTENANCE", "EMERGENCY", "EVENT", "WATER", "SECURITY", "FACILITY", "PARKING"
+// NoticePriority: "NORMAL", "IMPORTANT", "URGENT"
+
+model User {
+  id           String        @id @default(uuid())
+  name         String
+  email        String        @unique
+  passwordHash String
+  phone        String?
+  role         String        @default("RESIDENT")
+  avatar       String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  resident     Resident?
+  security     SecurityStaff?
+  notifications Notification[]
+  auditLogs    AuditLog[]
+  notices      Notice[]
+}
+
+model Building {
+  id        String   @id @default(uuid())
+  name      String
+  towers    Tower[]
+  createdAt DateTime @default(now())
+}
+
+model Tower {
+  id         String   @id @default(uuid())
+  buildingId String
+  name       String   // e.g. Tower A
+  units      Unit[]
+  building   Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+}
+
+model Unit {
+  id        String     @id @default(uuid())
+  towerId   String
+  unitNumber String    // e.g. A-1204
+  floor     Int
+  status    String     @default("OCCUPIED")
+  tower     Tower      @relation(fields: [towerId], references: [id], onDelete: Cascade)
+  
+  residents Resident[]
+  bills     MaintenanceBill[]
+}
+
+model Resident {
+  id               String       @id @default(uuid())
+  userId           String       @unique
+  unitId           String
+  residentType     String       @default("OWNER")
+  emergencyContact String?
+  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  unit             Unit         @relation(fields: [unitId], references: [id], onDelete: Cascade)
+
+  payments         Payment[]
+  complaints       Complaint[]
+  visitorPasses    VisitorPass[]
+  amenityBookings  AmenityBooking[]
+}
+
+model SecurityStaff {
+  id         String   @id @default(uuid())
+  userId     String   @unique
+  badgeId    String   @unique
+  shift      String?  // Morning, Evening, Night
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  logsCheckedIn  VisitorLog[] @relation("CheckedInBy")
+  logsCheckedOut VisitorLog[] @relation("CheckedOutBy")
+}
+
+model MaintenanceBill {
+  id             String        @id @default(uuid())
+  unitId         String
+  billingMonth   String        // e.g. "October 2026"
+  amount         Float
+  lateFee        Float         @default(0)
+  dueDate        DateTime
+  status         String        @default("PENDING")
+  unit           Unit          @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  payments       Payment[]
+  createdAt      DateTime      @default(now())
+}
+
+model Payment {
+  id            String          @id @default(uuid())
+  billId        String
+  residentId    String
+  amount        Float
+  paymentMethod String          // e.g. UPI, Card, NetBanking
+  transactionId String          @unique
+  receiptUrl    String?
+  paidAt        DateTime        @default(now())
+  bill          MaintenanceBill @relation(fields: [billId], references: [id], onDelete: Cascade)
+  resident      Resident        @relation(fields: [residentId], references: [id], onDelete: Cascade)
+}
+
+model Complaint {
+  id          String          @id @default(uuid())
+  ticketNo    String          @unique
+  residentId  String
+  category    String          // Plumbing, Electrical, Lift, Water, etc.
+  priority    String          @default("MEDIUM")
+  title       String
+  description String
+  status      String          @default("SUBMITTED")
+  assignedTo  String?         // Technician / Admin name
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  resident    Resident        @relation(fields: [residentId], references: [id], onDelete: Cascade)
+  comments    ComplaintComment[]
+}
+
+model ComplaintComment {
+  id          String    @id @default(uuid())
+  complaintId String
+  authorName  String
+  authorRole  String
+  message     String
+  createdAt   DateTime  @default(now())
+  complaint   Complaint @relation(fields: [complaintId], references: [id], onDelete: Cascade)
+}
+
+model VisitorPass {
+  id          String        @id @default(uuid())
+  passCode    String        @unique
+  residentId  String
+  visitorName String
+  visitorPhone String
+  vehicleNo   String?
+  purpose     String
+  visitorType String        @default("GUEST")
+  expectedTime DateTime
+  status      String        @default("EXPECTED")
+  createdAt   DateTime      @default(now())
+
+  resident    Resident      @relation(fields: [residentId], references: [id], onDelete: Cascade)
+  logs        VisitorLog[]
+}
+
+model VisitorLog {
+  id            String        @id @default(uuid())
+  passId        String
+  checkInTime   DateTime      @default(now())
+  checkOutTime  DateTime?
+  checkedInById String?
+  checkedOutById String?
+
+  pass          VisitorPass   @relation(fields: [passId], references: [id], onDelete: Cascade)
+  checkedInBy   SecurityStaff? @relation("CheckedInBy", fields: [checkedInById], references: [id])
+  checkedOutBy  SecurityStaff? @relation("CheckedOutBy", fields: [checkedOutById], references: [id])
+}
+
+model Amenity {
+  id             String          @id @default(uuid())
+  name           String
+  description    String
+  image          String
+  location       String
+  capacity       Int
+  operatingHours String
+  rules          String
+  bookingFee     Float           @default(0)
+  slots          AmenitySlot[]
+}
+
+model AmenitySlot {
+  id          String           @id @default(uuid())
+  amenityId   String
+  slotTime    String           // e.g. "06:00 AM - 08:00 AM"
+  date        String           // e.g. "2026-09-24"
+  maxCapacity Int
+  amenity     Amenity          @relation(fields: [amenityId], references: [id], onDelete: Cascade)
+  bookings    AmenityBooking[]
+}
+
+model AmenityBooking {
+  id         String        @id @default(uuid())
+  slotId     String
+  residentId String
+  bookingDate String
+  status     String        @default("BOOKED")
+  createdAt  DateTime      @default(now())
+
+  slot       AmenitySlot   @relation(fields: [slotId], references: [id], onDelete: Cascade)
+  resident   Resident      @relation(fields: [residentId], references: [id], onDelete: Cascade)
+}
+
+model Notice {
+  id          String         @id @default(uuid())
+  title       String
+  content     String
+  category    String         @default("GENERAL")
+  priority    String         @default("NORMAL")
+  publishedAt DateTime       @default(now())
+  expiresAt   DateTime?
+  authorId    String
+  author      User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String   // INFO, SUCCESS, WARNING, URGENT
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  action    String
+  entity    String
+  entityId  String?
+  details   String?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
