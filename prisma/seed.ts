@@ -30,33 +30,85 @@ async function main() {
 
   // 1. Create Building & Towers
   const building = await prisma.building.create({
-    data: { name: "Mahindra Ashvita Lifespaces" },
+    data: {
+      name: "Mahindra Ashvita Lifespaces",
+    },
   });
 
-  const towerA = await prisma.tower.create({ data: { buildingId: building.id, name: "Tower A" } });
-  const towerB = await prisma.tower.create({ data: { buildingId: building.id, name: "Tower B" } });
-  const towerC = await prisma.tower.create({ data: { buildingId: building.id, name: "Tower C" } });
-  const towerD = await prisma.tower.create({ data: { buildingId: building.id, name: "Tower D" } });
-  const towerE = await prisma.tower.create({ data: { buildingId: building.id, name: "Tower E" } });
+  const towerA = await prisma.tower.create({
+    data: {
+      buildingId: building.id,
+      name: "Tower A",
+    },
+  });
+
+  const towerB = await prisma.tower.create({
+    data: {
+      buildingId: building.id,
+      name: "Tower B",
+    },
+  });
+
+  const towerC = await prisma.tower.create({
+    data: {
+      buildingId: building.id,
+      name: "Tower C",
+    },
+  });
+
+  const towerD = await prisma.tower.create({
+    data: {
+      buildingId: building.id,
+      name: "Tower D",
+    },
+  });
+
+  const towerE = await prisma.tower.create({
+    data: {
+      buildingId: building.id,
+      name: "Tower E",
+    },
+  });
 
   // 2. Create Units
   const unitA1204 = await prisma.unit.create({
-    data: { towerId: towerA.id, unitNumber: "A-1204", floor: 12, status: "OCCUPIED" },
+    data: {
+      towerId: towerA.id,
+      unitNumber: "A-1204",
+      floor: 12,
+      status: "OCCUPIED",
+    },
   });
 
   const unitB802 = await prisma.unit.create({
-    data: { towerId: towerB.id, unitNumber: "B-802", floor: 8, status: "OCCUPIED" },
+    data: {
+      towerId: towerB.id,
+      unitNumber: "B-802",
+      floor: 8,
+      status: "OCCUPIED",
+    },
   });
 
   const unitC301 = await prisma.unit.create({
-    data: { towerId: towerC.id, unitNumber: "C-301", floor: 3, status: "OCCUPIED" },
+    data: {
+      towerId: towerC.id,
+      unitNumber: "C-301",
+      floor: 3,
+      status: "OCCUPIED",
+    },
   });
 
   const unitD105 = await prisma.unit.create({
-    data: { towerId: towerD.id, unitNumber: "D-105", floor: 1, status: "VACANT" },
+    data: {
+      towerId: towerD.id,
+      unitNumber: "D-105",
+      floor: 1,
+      status: "VACANT",
+    },
   });
 
   // 3. Create Users & Roles
+
   // ADMIN Account
   const adminUser = await prisma.user.create({
     data: {
@@ -65,7 +117,8 @@ async function main() {
       passwordHash: hashedPassword,
       phone: "+91 98765 43210",
       role: "ADMIN",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80",
+      avatar:
+        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80",
     },
   });
 
@@ -77,7 +130,8 @@ async function main() {
       passwordHash: hashedPassword,
       phone: "+91 98123 45678",
       role: "RESIDENT",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=250&q=80",
+      avatar:
+        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=250&q=80",
     },
   });
 
@@ -98,7 +152,8 @@ async function main() {
       passwordHash: hashedPassword,
       phone: "+91 97777 88888",
       role: "RESIDENT",
-      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=250&q=80",
+      avatar:
+        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=250&q=80",
     },
   });
 
@@ -119,7 +174,8 @@ async function main() {
       passwordHash: hashedPassword,
       phone: "+91 91111 22222",
       role: "SECURITY",
-      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=250&q=80",
+      avatar:
+        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=250&q=80",
     },
   });
 
@@ -132,26 +188,32 @@ async function main() {
   });
 
   // 4. Maintenance Bills & Payments
+
+  // September 2026 - Pending
   const bill1 = await prisma.maintenanceBill.create({
     data: {
       unitId: unitA1204.id,
       billingMonth: "September 2026",
       amount: 2450,
+      lateFee: 0,
       dueDate: new Date("2026-09-28"),
       status: "PENDING",
     },
   });
 
+  // August 2026 - Paid
   const bill2 = await prisma.maintenanceBill.create({
     data: {
       unitId: unitA1204.id,
       billingMonth: "August 2026",
       amount: 2450,
+      lateFee: 0,
       dueDate: new Date("2026-08-28"),
       status: "PAID",
     },
   });
 
+  // Existing payment for August bill
   await prisma.payment.create({
     data: {
       billId: bill2.id,
@@ -163,11 +225,26 @@ async function main() {
     },
   });
 
+  // October 2026 - Pending
+  // This bill is used to test the complete Pay Now → Payment → PAID flow.
+  await prisma.maintenanceBill.create({
+    data: {
+      unitId: unitA1204.id,
+      billingMonth: "October 2026",
+      amount: 2450,
+      lateFee: 0,
+      dueDate: new Date("2026-10-10"),
+      status: "PENDING",
+    },
+  });
+
+  // September 2026 - Overdue for second resident
   const bill3 = await prisma.maintenanceBill.create({
     data: {
       unitId: unitB802.id,
       billingMonth: "September 2026",
       amount: 3100,
+      lateFee: 0,
       dueDate: new Date("2026-09-20"),
       status: "OVERDUE",
     },
@@ -181,7 +258,8 @@ async function main() {
       category: "Plumbing",
       priority: "HIGH",
       title: "Master bathroom flush leak & low pressure",
-      description: "Water leaking constantly from the concealed cistern valve in the master bedroom flush unit.",
+      description:
+        "Water leaking constantly from the concealed cistern valve in the master bedroom flush unit.",
       status: "IN_PROGRESS",
       assignedTo: "Rajesh (Senior Plumber)",
     },
@@ -192,7 +270,8 @@ async function main() {
       complaintId: complaint1.id,
       authorName: "Vikram Sharma (Facility Mgr)",
       authorRole: "ADMIN",
-      message: "Technician Rajesh assigned. He will visit today between 3 PM and 4 PM.",
+      message:
+        "Technician Rajesh assigned. He will visit today between 3 PM and 4 PM.",
     },
   });
 
@@ -203,7 +282,8 @@ async function main() {
       category: "Lift / Elevator",
       priority: "URGENT",
       title: "Tower A Lift B making screeching sound",
-      description: "Lift B produces loud metallic noise between 8th and 12th floor.",
+      description:
+        "Lift B produces loud metallic noise between 8th and 12th floor.",
       status: "RESOLVED",
       assignedTo: "Otis Elevator Engineer",
     },
@@ -249,12 +329,15 @@ async function main() {
   const pool = await prisma.amenity.create({
     data: {
       name: "Temperature Controlled Swimming Pool",
-      description: "Semi-olympic size indoor heated swimming pool with toddler pool section.",
-      image: "https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?auto=format&fit=crop&w=800&q=80",
+      description:
+        "Semi-olympic size indoor heated swimming pool with toddler pool section.",
+      image:
+        "https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?auto=format&fit=crop&w=800&q=80",
       location: "Clubhouse 1st Floor",
       capacity: 25,
       operatingHours: "06:00 AM - 09:00 PM",
-      rules: "Proper swimwear mandatory. Children under 12 require adult supervision.",
+      rules:
+        "Proper swimwear mandatory. Children under 12 require adult supervision.",
       bookingFee: 0,
     },
   });
@@ -262,8 +345,10 @@ async function main() {
   const court = await prisma.amenity.create({
     data: {
       name: "Indoor Badminton Court (Court 1)",
-      description: "Synthetic wooden floor court with professional LED lighting.",
-      image: "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=800&q=80",
+      description:
+        "Synthetic wooden floor court with professional LED lighting.",
+      image:
+        "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=800&q=80",
       location: "Sports Complex Ground Floor",
       capacity: 4,
       operatingHours: "06:00 AM - 10:00 PM",
@@ -294,7 +379,8 @@ async function main() {
   await prisma.notice.create({
     data: {
       title: "🚨 URGENT: Scheduled Water Supply Maintenance on Sept 25th",
-      content: "Overhead tank cleaning and main inlet valve replacement will take place on Friday Sept 25 from 10:00 AM to 02:00 PM. Please store adequate water for household usage.",
+      content:
+        "Overhead tank cleaning and main inlet valve replacement will take place on Friday Sept 25 from 10:00 AM to 02:00 PM. Please store adequate water for household usage.",
       category: "WATER",
       priority: "URGENT",
       authorId: adminUser.id,
@@ -305,7 +391,8 @@ async function main() {
   await prisma.notice.create({
     data: {
       title: "🎉 Ashvita Dandiya & Diwali Cultural Fest 2026 Announcement",
-      content: "Join us at the Central Lawn on Oct 10th for evening Dandiya beats, food stalls, and community celebrations! Registration open for kid dance performances.",
+      content:
+        "Join us at the Central Lawn on Oct 10th for evening Dandiya beats, food stalls, and community celebrations! Registration open for kid dance performances.",
       category: "EVENT",
       priority: "NORMAL",
       authorId: adminUser.id,
@@ -319,7 +406,8 @@ async function main() {
       userId: residentUser.id,
       type: "WARNING",
       title: "Maintenance Bill Due",
-      message: "September 2026 maintenance bill of ₹2,450 is due on Sept 28th.",
+      message:
+        "September 2026 maintenance bill of ₹2,450 is due on Sept 28th.",
       link: "/resident/payments",
     },
   });
@@ -329,7 +417,8 @@ async function main() {
       userId: residentUser.id,
       type: "INFO",
       title: "Plumbing Complaint Assigned",
-      message: "Technician Rajesh has been assigned to ticket #CMP-2026-0041.",
+      message:
+        "Technician Rajesh has been assigned to ticket #CMP-2026-0041.",
       link: "/resident/complaints",
     },
   });
