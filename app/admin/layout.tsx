@@ -103,7 +103,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </button>
           </div>
         </header>
-        
+
         <div className="flex-1 p-4 md:p-8 w-full">
           {children}
         </div>

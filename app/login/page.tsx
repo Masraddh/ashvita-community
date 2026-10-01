@@ -21,7 +21,7 @@ export default function LoginPage() {
     const result = await loginAction(formData);
     
     if (result.error) {
-      toast("Error", result.error, "danger");
+      toast("Error", result.error, "error");
       setIsLoading(false);
     } else if (result.success && result.redirectUrl) {
       toast("Welcome back!", "Successfully signed in to Ashvita.", "success");
