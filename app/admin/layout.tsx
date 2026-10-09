@@ -54,7 +54,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="flex-1 overflow-y-auto py-4 space-y-1 px-3">
           <p className="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 mt-4 md:mt-0">Management</p>
           {navItems.map((item) => {
-            const isActive = pathname.startsWith(item.href);
+            const isActive = (pathname || "").startsWith(item.href);
             return (
               <Link
                 key={item.name}

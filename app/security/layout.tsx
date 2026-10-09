@@ -44,7 +44,7 @@ export default function SecurityLayout({ children }: { children: React.ReactNode
 
         <div className="flex-1 overflow-y-auto py-4 space-y-1 px-3">
           {navItems.map((item) => {
-            const isActive = pathname.startsWith(item.href);
+            const isActive = (pathname || "").startsWith(item.href);
             return (
               <Link key={item.name} href={item.href} onClick={() => setSidebarOpen(false)}
                 className={cn(

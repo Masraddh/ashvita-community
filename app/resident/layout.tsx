@@ -76,7 +76,7 @@ export default function ResidentLayout({
   const unitNumber = profile?.unit?.unitNumber || "Unit";
 
   const currentPage =
-    navItems.find((item) => pathname.startsWith(item.href))?.name ||
+    navItems.find((item) => (pathname || "").startsWith(item.href))?.name ||
     "Dashboard";
 
   const initials = name
@@ -221,7 +221,7 @@ export default function ResidentLayout({
           <nav className="space-y-1.5">
 
             {navItems.map((item) => {
-              const isActive = pathname.startsWith(item.href);
+              const isActive = (pathname || "").startsWith(item.href);
               const Icon = item.icon;
 
               return (
