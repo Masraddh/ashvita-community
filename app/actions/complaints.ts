@@ -3,6 +3,9 @@
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { redis } from "@/lib/redis";
+
+const CACHE_TTL = 60 * 5; // 5 minutes
 
 function generateTicketNo() {
     const year = new Date().getFullYear();
@@ -32,6 +35,13 @@ export async function getResidentComplaints() {
         return null;
     }
 
+    const cacheKey = `complaints:resident:${resident.id}`;
+    const cachedComplaints = await redis.get(cacheKey);
+
+    if (cachedComplaints) {
+        return JSON.parse(cachedComplaints);
+    }
+
     const complaints = await db.complaint.findMany({
         where: {
             residentId: resident.id,
@@ -47,6 +57,8 @@ export async function getResidentComplaints() {
             },
         },
     });
+
+    await redis.setex(cacheKey, CACHE_TTL, JSON.stringify(complaints));
 
     return complaints;
 }
@@ -131,6 +143,9 @@ export async function createComplaint(data: {
                 status: "SUBMITTED",
             },
         });
+
+        await redis.del(`complaints:resident:${resident.id}`);
+        await redis.del("complaints:admin:all");
 
         revalidatePath("/resident/complaints");
         revalidatePath("/admin/complaints");
@@ -240,6 +255,9 @@ export async function addComplaintComment(
             },
         });
 
+        await redis.del(`complaints:resident:${resident.id}`);
+        await redis.del("complaints:admin:all");
+
         revalidatePath("/resident/complaints");
 
         return {
@@ -269,6 +287,13 @@ export async function getAdminComplaints() {
         return null;
     }
 
+    const cacheKey = "complaints:admin:all";
+    const cachedComplaints = await redis.get(cacheKey);
+
+    if (cachedComplaints) {
+        return JSON.parse(cachedComplaints);
+    }
+
     try {
         const complaints = await db.complaint.findMany({
             orderBy: {
@@ -288,6 +313,8 @@ export async function getAdminComplaints() {
                 },
             },
         });
+
+        await redis.setex(cacheKey, CACHE_TTL, JSON.stringify(complaints));
 
         return complaints;
     } catch (error) {
@@ -484,6 +511,9 @@ export async function addAdminComplaintComment(
                     message: message.trim(),
                 },
             });
+
+        await redis.del(`complaints:resident:${complaint.residentId}`);
+        await redis.del("complaints:admin:all");
 
         revalidatePath("/admin/complaints");
         revalidatePath("/resident/complaints");

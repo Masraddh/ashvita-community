@@ -3,6 +3,7 @@
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { pusherServer } from "@/lib/pusher";
 
 function generatePassCode() {
     const random = Math.floor(100000 + Math.random() * 900000);
@@ -159,6 +160,12 @@ export async function createVisitorPass(data: {
         revalidatePath("/resident/visitors");
         revalidatePath("/admin/visitors");
 
+        try {
+            await pusherServer.trigger('visitors', 'new-visitor', visitor);
+        } catch (e) {
+            console.error("Pusher error:", e);
+        }
+
         return {
             success: true,
             visitor,
@@ -301,6 +308,12 @@ export async function checkInVisitor(
         revalidatePath("/security/visitors");
         revalidatePath("/resident/visitors");
 
+        try {
+            await pusherServer.trigger('visitors', 'status-update', { id: visitor.id, status: 'CHECKED_IN' });
+        } catch (e) {
+            console.error("Pusher error:", e);
+        }
+
         return {
             success: true,
             log,
@@ -406,6 +419,12 @@ export async function checkOutVisitor(
         revalidatePath("/security/visitors");
         revalidatePath("/resident/visitors");
 
+        try {
+            await pusherServer.trigger('visitors', 'status-update', { id: visitor.id, status: 'CHECKED_OUT' });
+        } catch (e) {
+            console.error("Pusher error:", e);
+        }
+
         return {
             success: true,
             log,
@@ -473,6 +492,12 @@ export async function rejectVisitor(
         revalidatePath("/admin/visitors");
         revalidatePath("/security/visitors");
         revalidatePath("/resident/visitors");
+
+        try {
+            await pusherServer.trigger('visitors', 'status-update', { id: passId, status: 'REJECTED' });
+        } catch (e) {
+            console.error("Pusher error:", e);
+        }
 
         return {
             success: true,

@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { getResidentProfile } from "@/app/actions/user";
 import { logoutAction } from "@/app/actions/auth";
+import { PusherListener } from "@/components/PusherListener";
 
 const navItems = [
   {
@@ -87,6 +88,7 @@ export default function ResidentLayout({
 
   return (
     <div className="min-h-screen bg-[#f6f7fb] text-slate-900 dark:bg-slate-950 dark:text-white">
+      <PusherListener />
 
       {/* ================= MOBILE HEADER ================= */}
 

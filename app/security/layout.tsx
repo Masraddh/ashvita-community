@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { ShieldCheck, Home, Users, FileText, User, Menu, X, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
+import { PusherListener } from "@/components/PusherListener";
 
 const navItems = [
   { name: "Dashboard", href: "/security/dashboard", icon: Home },
@@ -19,6 +20,7 @@ export default function SecurityLayout({ children }: { children: React.ReactNode
 
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col md:flex-row text-white">
+      <PusherListener />
       <div className="md:hidden flex items-center justify-between p-4 bg-slate-900 sticky top-0 z-40 border-b border-slate-800">
         <div className="flex items-center gap-2 text-emerald-400">
           <ShieldCheck className="w-6 h-6" />
