@@ -18,14 +18,19 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
     const formData = new FormData(e.currentTarget);
-    const result = await loginAction(formData);
-    
-    if (result.error) {
-      toast("Error", result.error, "error");
+    try {
+      const result = await loginAction(formData);
+      
+      if (result.error) {
+        toast("Error", result.error, "error");
+        setIsLoading(false);
+      } else if (result.success && result.redirectUrl) {
+        toast("Welcome back!", "Successfully signed in to Ashvita.", "success");
+        router.push(result.redirectUrl);
+      }
+    } catch (err) {
+      toast("Error", "Server error. Could not connect to database.", "error");
       setIsLoading(false);
-    } else if (result.success && result.redirectUrl) {
-      toast("Welcome back!", "Successfully signed in to Ashvita.", "success");
-      router.push(result.redirectUrl);
     }
   };
 
