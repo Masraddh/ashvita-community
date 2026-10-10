@@ -95,7 +95,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <main className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
         <header className="hidden md:flex h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 items-center justify-between px-8 sticky top-0 z-20 shadow-sm">
           <h1 className="text-lg font-bold text-slate-800 dark:text-slate-100 tracking-tight">
-            {navItems.find((i) => pathname.startsWith(i.href))?.name || "Admin"}
+            {navItems.find((i) => (pathname || "").startsWith(i.href))?.name || "Admin"}
           </h1>
           <div className="flex items-center gap-4">
             <button className="relative p-2 rounded-full text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
